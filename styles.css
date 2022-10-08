@@ -27,7 +27,7 @@ body {
 .listing {
   display: grid;
   grid-template-columns: 120px repeat(3, 1fr);
-  padding: .3rem;
+  padding: .2rem;
   border-bottom: 1px solid black;
   column-gap: 10px;
   align-items: center;
@@ -83,4 +83,29 @@ body {
 
 #invoice-total:focus {
   outline: none;
+}
+
+.active {
+  background-color: hsl(190, 57%, 78%);
+  font-weight: bold;
+}
+
+@keyframes quantityFade {
+  from {background-color: hsl(200, 53%, 57%);}
+  to {background-color: transparent;}
+}
+
+[data-quantity],
+[data-total]{
+  padding: .3rem;
+  border-radius: 5px;
+
+}
+
+
+.quantityAnimation {
+  background-color: hsl(200, 57%, 78%);
+  animation-name: quantityFade;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
 }

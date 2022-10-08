@@ -30,11 +30,16 @@ function handlePlusButton({
   totalElement,
   quantityElement,
   halfPrice,
+  listing,
 }) {
   quantity++;
   quantityElement.innerHTML = quantity;
-  totalElement.innerHTML = `£${countTotal(quantity, itemPrice, halfPrice)}`;
+  const countedTotal = countTotal(quantity, itemPrice, halfPrice);
+  totalElement.innerHTML = `£${formatNum(countedTotal)}`;
   calculateTotal();
+  addBackground(quantity, listing);
+  addFadeAnimation(quantityElement);
+  addFadeAnimation(totalElement);
 }
 
 function handleMinusButton({
@@ -44,12 +49,30 @@ function handleMinusButton({
   totalElement,
   quantityElement,
   halfPrice,
+  listing,
 }) {
   if (quantity <= 0) return;
   quantity--;
   quantityElement.innerHTML = quantity;
-  totalElement.innerHTML = `£${countTotal(quantity, itemPrice, halfPrice)}`;
+  const countedTotal = countTotal(quantity, itemPrice, halfPrice);
+  totalElement.innerHTML = `£${formatNum(countedTotal)}`;
   calculateTotal();
+  addBackground(quantity, listing);
+  addFadeAnimation(quantityElement);
+  addFadeAnimation(totalElement);
+}
+
+function addBackground(quantity, listing) {
+  if (quantity > 0) listing.classList.add('active');
+  else listing.classList.remove('active');
+}
+
+function addFadeAnimation(element) {
+  element.classList.remove('quantityAnimation');
+  setTimeout(() => {
+    element.classList.add('quantityAnimation');
+  }, 10);
+  // element.addEventListener('animationend', helper);
 }
 
 function handleQuantity(e) {
@@ -78,6 +101,7 @@ function handleQuantity(e) {
       quantityElement: quantityElement,
       itemPrice: itemPrice,
       halfPrice: halfPrice,
+      listing: listing,
     });
   if (buttonPressed.id === 'plusB')
     handlePlusButton({
@@ -87,7 +111,31 @@ function handleQuantity(e) {
       quantityElement: quantityElement,
       itemPrice: itemPrice,
       halfPrice: halfPrice,
+      listing: listing,
     });
+}
+
+function formatNum(num) {
+  let numAsString = '' + num;
+  let counter = 0;
+  let startCount = false;
+
+  if (numAsString.indexOf('.') === -1) {
+    numAsString += '.00';
+    return numAsString;
+  }
+
+  for (let char of numAsString) {
+    if (startCount) {
+      counter++;
+    }
+    if (char === '.') {
+      startCount = true;
+    }
+  }
+
+  if (counter === 1) numAsString += '0';
+  return numAsString;
 }
 
 function createListing(price, name, halfPrice) {
@@ -122,12 +170,12 @@ function createListing(price, name, halfPrice) {
 
   listing.innerHTML = `
   <p>${name}</p>
-  <p data-price="${id}">£${price}</p>`;
+  <p data-price="${id}">£${formatNum(price)}</p>`;
   listing.append(quantityDiv);
 
   const total = document.createElement('p');
   total.dataset.total = id;
-  total.innerHTML = '£0';
+  total.innerHTML = '£0.00';
 
   listing.append(total);
   return listing;
@@ -175,14 +223,14 @@ function calculateTotal() {
     warning.classList.add('hidden');
   }
 
-  discount.innerHTML = `Discount: £${total}`;
+  discount.innerHTML = `Discount: £${formatNum(total)}`;
 
   const invoiceTotalValue =
     invoiceTotal.value === '' ? '0.00' : parseFloat(invoiceTotal.value);
 
   const totalTotal = Math.round((invoiceTotalValue - total) * 100) / 100;
 
-  totalSum.innerHTML = `£${totalTotal}`;
+  totalSum.innerHTML = `£${formatNum(totalTotal)}`;
 }
 
 function exceedsDots(string) {
@@ -196,6 +244,20 @@ function exceedsDots(string) {
   }
 
   return dots > 1;
+}
+
+function decimalDigits(num) {
+  const numAsString = '' + num;
+
+  let counter = 0;
+  let startCount = false;
+
+  for (let char of num) {
+    if (startCount) counter++;
+    if (char === '.') startCount = true;
+  }
+
+  return counter;
 }
 
 // Event listener for day
@@ -217,6 +279,12 @@ priceType.addEventListener('change', (e) => {
 });
 
 invoiceTotal.addEventListener('input', (e) => {
+  if (decimalDigits(invoiceTotal.value) > 2) {
+    invoiceTotal.value = invoiceTotal.value.slice(
+      0,
+      invoiceTotal.value.length - 1
+    );
+  }
   if ((e.data !== '.' && isNaN(e.data)) || exceedsDots(invoiceTotal.value)) {
     invoiceTotal.value = invoiceTotal.value.slice(
       0,

@@ -22,9 +22,25 @@ export default [
   },
   {
     name: 'Bread Half',
-    price: 0.99,
+    price: 1,
     halfPrice: false,
   },
+  {
+    name: 'Senoliu',
+    price: 1.35,
+    halfPrice: false,
+  },
+  {
+    name: 'Kaimiskas',
+    price: 1.1,
+    halfPrice: false,
+  },
+  {
+    name: 'Arbatinis',
+    price: 0.9,
+    halfPrice: false,
+  },
+
   {
     name: 'Small Pastry',
     price: 0.88,
