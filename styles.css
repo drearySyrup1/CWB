@@ -47,11 +47,23 @@ body {
   font-weight: bold;
 }
 
+@keyframes buttonBackGroundColor {
+  from {background-color: default;}
+  to {background-color: grey;}
+}
+
 .listing button {
   border: 1px solid grey;
   border-radius: 5px;
   width: 30px;
   height: 30px;
+}
+
+.buttonBackgroundAnimation {
+  animation: buttonBackGroundColor;
+  animation-duration: 150ms;
+  animation-direction: alternate;
+  animation-iteration-count: 2;
 }
 
 .quantity-things {
@@ -75,14 +87,20 @@ body {
   visibility: hidden;
 }
 
-#invoice-total {
+#invoice-total,
+input[type=number][data-price] {
   border: 0;
   border-bottom: 1px solid black;
   font-size: 1rem;
 }
 
-#invoice-total:focus {
+#invoice-total:focus,
+input[type=number][data-price] {
   outline: none;
+}
+
+input[type=number][data-price] {
+  font-size: .8rem;
 }
 
 .active {
@@ -104,8 +122,21 @@ body {
 
 
 .quantityAnimation {
-  background-color: hsl(200, 57%, 78%);
+  /* background-color: hsl(200, 57%, 78%); */
   animation-name: quantityFade;
   animation-duration: 1s;
   animation-fill-mode: forwards;
+}
+
+.listing input[type=number] {
+  width: 45px;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
 }

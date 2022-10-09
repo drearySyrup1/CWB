@@ -38,8 +38,8 @@ function handlePlusButton({
   totalElement.innerHTML = `£${formatNum(countedTotal)}`;
   calculateTotal();
   addBackground(quantity, listing);
-  addFadeAnimation(quantityElement);
-  addFadeAnimation(totalElement);
+  addFadeAnimation(quantityElement, 'quantityAnimation');
+  addFadeAnimation(totalElement, 'quantityAnimation');
 }
 
 function handleMinusButton({
@@ -58,8 +58,8 @@ function handleMinusButton({
   totalElement.innerHTML = `£${formatNum(countedTotal)}`;
   calculateTotal();
   addBackground(quantity, listing);
-  addFadeAnimation(quantityElement);
-  addFadeAnimation(totalElement);
+  addFadeAnimation(quantityElement, 'quantityAnimation');
+  addFadeAnimation(totalElement, 'quantityAnimation');
 }
 
 function addBackground(quantity, listing) {
@@ -67,28 +67,34 @@ function addBackground(quantity, listing) {
   else listing.classList.remove('active');
 }
 
-function addFadeAnimation(element) {
-  element.classList.remove('quantityAnimation');
+function addFadeAnimation(element, className) {
+  console.log(element);
+  element.classList.remove(className);
   setTimeout(() => {
-    element.classList.add('quantityAnimation');
+    element.classList.add(className);
   }, 10);
   // element.addEventListener('animationend', helper);
 }
 
-function handleQuantity(e) {
+function handleQuantity(e, isCustom) {
   const buttonPressed = e.currentTarget;
   const id = buttonPressed.dataset.id;
   const listing = document.querySelector(`.listing[data-id="${id}"]`);
+  let itemPrice;
 
   const itemPriceElement = listing.querySelector(
     `.listing [data-price="${id}"]`
   );
+  if (isCustom) {
+    itemPrice = parseFloat(itemPriceElement.value);
+  } else {
+    itemPrice = parseFloat(itemPriceElement.innerHTML.slice(1));
+  }
   const totalElement = listing.querySelector(`.listing [data-total="${id}"]`);
   const quantityElement = listing.querySelector(
     `.listing [data-quantity="${id}"]`
   );
 
-  const itemPrice = parseFloat(itemPriceElement.innerHTML.slice(1));
   const total = parseFloat(totalElement.innerHTML.slice(1));
   const quantity = parseInt(quantityElement.innerHTML);
   const halfPrice = listing.dataset.halfPrice === 'true' ? true : false;
@@ -157,8 +163,14 @@ function createListing(price, name, halfPrice) {
   plusButton.innerHTML = '+';
   plusButton.dataset.id = id;
 
-  minusButton.addEventListener('click', handleQuantity);
-  plusButton.addEventListener('click', handleQuantity);
+  minusButton.addEventListener('click', (e) => {
+    handleQuantity(e, false);
+    addFadeAnimation(minusButton, 'buttonBackgroundAnimation');
+  });
+  plusButton.addEventListener('click', (e) => {
+    handleQuantity(e, false);
+    addFadeAnimation(plusButton, 'buttonBackgroundAnimation');
+  });
 
   const quantity = document.createElement('span');
   quantity.innerHTML = '0';
@@ -203,6 +215,8 @@ function populateListings(items, parent) {
     }
     parent.appendChild(listing);
   });
+
+  addCustomField(parent);
 }
 
 function calculateTotal() {
@@ -260,6 +274,102 @@ function decimalDigits(num) {
   return counter;
 }
 
+function addCustomField(parent) {
+  const id = idGen();
+  const listing = document.createElement('div');
+  listing.classList.add('listing');
+  listing.dataset.id = id;
+  // Create buttons
+  const quantityDiv = document.createElement('div');
+  quantityDiv.classList.add('quantity-things');
+
+  const minusButton = document.createElement('button');
+  minusButton.id = 'minusB';
+  minusButton.innerHTML = '-';
+  minusButton.dataset.id = id;
+  const plusButton = document.createElement('button');
+  plusButton.id = 'plusB';
+  plusButton.innerHTML = '+';
+  plusButton.dataset.id = id;
+
+  minusButton.addEventListener('click', (e) => {
+    handleQuantity(e, true);
+    addFadeAnimation(minusButton, 'buttonBackgroundAnimation');
+  });
+  plusButton.addEventListener('click', (e) => {
+    handleQuantity(e, true);
+    addFadeAnimation(plusButton, 'buttonBackgroundAnimation');
+  });
+
+  const quantity = document.createElement('span');
+  quantity.innerHTML = '0';
+  quantity.dataset.quantity = id;
+
+  quantityDiv.append(minusButton);
+  quantityDiv.append(quantity);
+  quantityDiv.append(plusButton);
+
+  const customAddButton = document.createElement('button');
+  customAddButton.dataset.id = id;
+  customAddButton.innerHTML = '+';
+
+  customAddButton.addEventListener('click', () => {
+    addCustomField(listings);
+    addFadeAnimation(customAddButton, 'buttonBackgroundAnimation');
+  });
+
+  const customFieldParent = document.createElement('p');
+  customFieldParent.append(customAddButton);
+
+  customFieldParent.append('Custom');
+  listing.append(customFieldParent);
+
+  const priceInputParent = document.createElement('p');
+  const priceInput = document.createElement('input');
+
+  priceInput.addEventListener('input', (e) => {
+    console.log();
+    const inputId = e.currentTarget.dataset.price;
+    const quantity = listings.querySelector(
+      `[data-id="${inputId}"] [data-quantity="${inputId}"]`
+    ).innerHTML;
+    const totalElement = listings.querySelector(
+      `[data-id="${inputId}"] [data-total="${inputId}"]`
+    );
+    const price = priceInput.value === '' ? 0 : priceInput.value;
+    console.log(quantity);
+    console.log(totalElement);
+    totalElement.innerHTML = `${currencyPrefix}${formatNum(
+      countTotal(parseInt(quantity), parseFloat(price), false)
+    )}`;
+    calculateTotal();
+  });
+
+  priceInput.type = 'number';
+  priceInput.value = 0.0;
+  priceInput.dataset.price = id;
+  priceInputParent.innerHTML = currencyPrefix;
+  priceInputParent.append(priceInput);
+
+  priceInput.addEventListener('click', () => {
+    if (priceInput.value === '0') priceInput.value = '';
+  });
+  priceInput.addEventListener('blur', () => {
+    if (priceInput.value === '') priceInput.value = 0;
+  });
+
+  listing.append(customFieldParent);
+  listing.append(priceInputParent);
+  listing.append(quantityDiv);
+
+  const total = document.createElement('p');
+  total.dataset.total = id;
+  total.innerHTML = '£0.00';
+
+  listing.append(total);
+  parent.append(listing);
+}
+
 // Event listener for day
 const priceType = document.getElementById('price');
 let breadPrice = priceType.value;
@@ -278,21 +388,17 @@ priceType.addEventListener('change', (e) => {
   populateListings(items, listings);
 });
 
-invoiceTotal.addEventListener('input', (e) => {
-  if (decimalDigits(invoiceTotal.value) > 2) {
-    invoiceTotal.value = invoiceTotal.value.slice(
-      0,
-      invoiceTotal.value.length - 1
-    );
+function numbersOnly(e, sourceEl) {
+  if (decimalDigits(sourceEl.value) > 2) {
+    sourceEl.value = sourceEl.value.slice(0, sourceEl.value.length - 1);
   }
-  if ((e.data !== '.' && isNaN(e.data)) || exceedsDots(invoiceTotal.value)) {
-    invoiceTotal.value = invoiceTotal.value.slice(
-      0,
-      invoiceTotal.value.length - 1
-    );
+  if ((e.data !== '.' && isNaN(e.data)) || exceedsDots(sourceEl.value)) {
+    sourceEl.value = sourceEl.value.slice(0, sourceEl.value.length - 1);
   } else {
     calculateTotal();
   }
-});
+}
+
+invoiceTotal.addEventListener('input', (e) => numbersOnly(e, invoiceTotal));
 // After seleted shop
 // Load items with correct prices
