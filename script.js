@@ -219,7 +219,20 @@ function populateListings(items, parent) {
   addCustomField(parent);
 }
 
-function calculateTotal() {
+function calculateTotal(useTen) {
+  const invoiceTotalValue =
+    invoiceTotal.value === '' ? '0.00' : parseFloat(invoiceTotal.value);
+
+  if (useTen) {
+    discount.innerHTML = `Discount: £${formatNum(tenPrcValue)}`;
+    const totalMinusTenPrc =
+      Math.round((invoiceTotalValue - tenPrcValue) * 100) / 100;
+
+    totalSum.innerHTML = `£${formatNum(totalMinusTenPrc)}`;
+    populateListings(items, listings);
+    displayWarning({ diff: 0, show: false });
+    return;
+  }
   const total =
     Math.round(
       [...listings.children].reduce((accu, child) => {
@@ -231,18 +244,16 @@ function calculateTotal() {
       }, 0) * 100
     ) / 100;
 
-  if (total > Math.round(invoiceTotal.value * 0.1 * 100) / 100) {
-    warning.classList.remove('hidden');
+  const overflow = Math.round((total - tenPrcValue) * 100) / 100;
+  const totalTotal = Math.round((invoiceTotalValue - total) * 100) / 100;
+
+  if (total > tenPrcValue) {
+    displayWarning({ diff: overflow, show: true });
   } else {
-    warning.classList.add('hidden');
+    displayWarning({ diff: 0, show: false });
   }
 
   discount.innerHTML = `Discount: £${formatNum(total)}`;
-
-  const invoiceTotalValue =
-    invoiceTotal.value === '' ? '0.00' : parseFloat(invoiceTotal.value);
-
-  const totalTotal = Math.round((invoiceTotalValue - total) * 100) / 100;
 
   totalSum.innerHTML = `£${formatNum(totalTotal)}`;
 }
@@ -272,6 +283,15 @@ function decimalDigits(num) {
   }
 
   return counter;
+}
+
+function displayWarning({ diff, show }) {
+  if (show) {
+    warning.innerHTML = `${currencyPrefix}${diff} MORE THAN 10%`;
+    warning.classList.remove('hidden');
+  } else {
+    warning.classList.add('hidden');
+  }
 }
 
 function addCustomField(parent) {
@@ -371,6 +391,14 @@ function addCustomField(parent) {
   parent.append(listing);
 }
 
+function displayTenPrc(inputPrice) {
+  const tenPrc = formatNum(Math.round(inputPrice * 0.1 * 100) / 100);
+  tenPrcValue = tenPrc;
+  tenPrcElement.innerHTML = `10%: ${currencyPrefix}
+  ${tenPrc}
+  `;
+}
+
 // Event listener for day
 const priceType = document.getElementById('price');
 let breadPrice = priceType.value;
@@ -381,7 +409,17 @@ const totalSum = document.getElementById('totalSum');
 const warning = document.getElementById('warning');
 const discount = document.getElementById('discount');
 const currencyPrefix = '£';
+const tenPrcElement = document.getElementById('tenprc-element');
+const useTenButton = document.getElementById('10prc-btn');
+let tenPrcValue = 0;
+
 populateListings(items, listings);
+
+useTenButton.addEventListener('click', () => {
+  if (!(invoiceTotal.value === '')) {
+    calculateTotal(true);
+  }
+});
 
 priceType.addEventListener('change', (e) => {
   breadPrice = priceType.value;
@@ -400,6 +438,9 @@ function numbersOnly(e, sourceEl) {
   }
 }
 
-invoiceTotal.addEventListener('input', (e) => numbersOnly(e, invoiceTotal));
+invoiceTotal.addEventListener('input', (e) => {
+  displayTenPrc(invoiceTotal.value);
+  numbersOnly(e, invoiceTotal);
+});
 // After seleted shop
 // Load items with correct prices
