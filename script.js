@@ -40,6 +40,7 @@ function handlePlusButton({
   addBackground(quantity, listing);
   addFadeAnimation(quantityElement, 'quantityAnimation');
   addFadeAnimation(totalElement, 'quantityAnimation');
+  updateDebtField();
 }
 
 function handleMinusButton({
@@ -60,6 +61,7 @@ function handleMinusButton({
   addBackground(quantity, listing);
   addFadeAnimation(quantityElement, 'quantityAnimation');
   addFadeAnimation(totalElement, 'quantityAnimation');
+  updateDebtField();
 }
 
 function addBackground(quantity, listing) {
@@ -68,7 +70,6 @@ function addBackground(quantity, listing) {
 }
 
 function addFadeAnimation(element, className) {
-  console.log(element);
   element.classList.remove(className);
   setTimeout(() => {
     element.classList.add(className);
@@ -225,10 +226,12 @@ function calculateTotal(useTen) {
 
   if (useTen) {
     discount.innerHTML = `Discount: £${formatNum(tenPrcValue)}`;
+    discountValue = tenPrcValue;
     const totalMinusTenPrc =
       Math.round((invoiceTotalValue - tenPrcValue) * 100) / 100;
 
     totalSum.innerHTML = `£${formatNum(totalMinusTenPrc)}`;
+    totalSumValue = totalMinusTenPrc;
     populateListings(items, listings);
     displayWarning({ diff: 0, show: false });
     return;
@@ -254,8 +257,10 @@ function calculateTotal(useTen) {
   }
 
   discount.innerHTML = `Discount: £${formatNum(total)}`;
+  discountValue = total;
 
   totalSum.innerHTML = `£${formatNum(totalTotal)}`;
+  totalSumValue = totalTotal;
 }
 
 function exceedsDots(string) {
@@ -349,7 +354,6 @@ function addCustomField(parent) {
   const priceInput = document.createElement('input');
 
   priceInput.addEventListener('input', (e) => {
-    console.log();
     const inputId = e.currentTarget.dataset.price;
     const quantity = listings.querySelector(
       `[data-id="${inputId}"] [data-quantity="${inputId}"]`
@@ -358,8 +362,6 @@ function addCustomField(parent) {
       `[data-id="${inputId}"] [data-total="${inputId}"]`
     );
     const price = priceInput.value === '' ? 0 : priceInput.value;
-    console.log(quantity);
-    console.log(totalElement);
     totalElement.innerHTML = `${currencyPrefix}${formatNum(
       countTotal(parseInt(quantity), parseFloat(price), false)
     )}`;
@@ -392,11 +394,40 @@ function addCustomField(parent) {
 }
 
 function displayTenPrc(inputPrice) {
-  const tenPrc = formatNum(Math.round(inputPrice * 0.1 * 100) / 100);
+  const tenPrc = Math.round(inputPrice * 0.1 * 100) / 100;
+  const tenPrcFormatted = formatNum(tenPrc);
   tenPrcValue = tenPrc;
   tenPrcElement.innerHTML = `10%: ${currencyPrefix}
   ${tenPrc}
   `;
+}
+
+async function postData(url = '', data = {}) {
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': 'admin-123',
+    },
+    cors: 'no-cors',
+    redirect: 'manual',
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
+  return response.json(); // parses JSON response into native JavaScript objects
+}
+
+function hideIcon(iconElement, time, className) {
+  function hide() {
+    iconElement.classList.add(className);
+    iconElement.classList.remove('fadeout');
+    iconElement.classList.remove('fadein');
+    iconElement.removeEventListener('animationend', hide);
+  }
+  setTimeout(() => {
+    iconElement.classList.add('fadeout');
+    iconElement.addEventListener('animationend', hide);
+  }, time);
 }
 
 // Event listener for day
@@ -411,6 +442,17 @@ const discount = document.getElementById('discount');
 const currencyPrefix = '£';
 const tenPrcElement = document.getElementById('tenprc-element');
 const useTenButton = document.getElementById('10prc-btn');
+const addShopButton = document.getElementById('addshop-btn');
+const loadingIcon = document.getElementById('loadingsvg');
+const successIcon = document.getElementById('successIcon');
+const errorIcon = document.getElementById('errorIcon');
+const isDebt = document.getElementById('isDebt');
+const debtPaid = document.getElementById('debtpaid');
+const debtPaidInput = document.getElementById('debtpaid-input');
+const debtpaidInputField = document.getElementById('debtpaidInputField');
+const debtField = document.getElementById('debtField');
+let discountValue = 0;
+let totalSumValue = 0;
 let tenPrcValue = 0;
 
 populateListings(items, listings);
@@ -419,6 +461,62 @@ useTenButton.addEventListener('click', () => {
   if (!(invoiceTotal.value === '')) {
     calculateTotal(true);
   }
+});
+
+function updateDebtField() {
+  debtField.innerHTML = `Debt: <em>${currencyPrefix}${formatNum(
+    Math.round((totalSumValue - parseFloat(debtpaidInputField.value)) * 100) /
+      100
+  )}</em>`;
+}
+
+debtpaidInputField.addEventListener('input', updateDebtField);
+
+addShopButton.addEventListener('click', () => {
+  let debt;
+  let paid;
+  if (debtPaid.checked) {
+    const paidFromInput = parseFloat(debtpaidInputField.value);
+    debt = totalSumValue - paidFromInput;
+    paid = paidFromInput;
+  } else {
+    debt = isDebt.checked ? totalSumValue : 0;
+    paid = !isDebt.checked ? totalSumValue : 0;
+  }
+
+  const shop = {
+    discount: discountValue,
+    debt: debt,
+    paid: paid,
+  };
+
+  console.log(shop);
+  loadingIcon.classList.remove('displaynone');
+  postData('https://aurimasg7.pythonanywhere.com/data', shop).then((data) => {
+    loadingIcon.classList.add('displaynone');
+    if (data.message === 'SHOP ADDED') {
+      successIcon.classList.remove('displaynone');
+      successIcon.classList.add('fadein');
+      hideIcon(successIcon, 2000, 'displaynone');
+    } else {
+      errorIcon.classList.remove('displaynone');
+      successIcon.classList.add('fadein');
+      hideIcon(errorIcon, 2000, 'displaynone');
+    }
+  });
+});
+
+debtPaid.addEventListener('click', () => {
+  if (debtPaid.checked) {
+    isDebt.checked = false;
+    debtPaidInput.classList.remove('displaynone');
+  } else {
+    debtPaidInput.classList.add('displaynone');
+  }
+});
+isDebt.addEventListener('click', () => {
+  if (isDebt.checked) debtPaid.checked = false;
+  debtPaidInput.classList.add('displaynone');
 });
 
 priceType.addEventListener('change', (e) => {
@@ -441,6 +539,7 @@ function numbersOnly(e, sourceEl) {
 invoiceTotal.addEventListener('input', (e) => {
   displayTenPrc(invoiceTotal.value);
   numbersOnly(e, invoiceTotal);
+  updateDebtField();
 });
 // After seleted shop
 // Load items with correct prices

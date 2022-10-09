@@ -96,8 +96,81 @@
     <div id="warning" class="hidden">2.50 MORE THAN 10%</div>
     <div class="control-buttons">
       <button id="10prc-btn">use 10%</button>
-      <button id="addshop-btn">add shop</button>
+      <button id="addshop-btn">
+        <svg
+          class="displaynone"
+          version="1.1"
+          id="loadingsvg"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          x="0px"
+          y="0px"
+          viewBox="0 0 100 100"
+          enable-background="new 0 0 0 0"
+          xml:space="preserve"
+          style="width: 30px; height: 30px"
+        >
+          <path
+            fill="#000"
+            d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50"
+          >
+            <animateTransform
+              attributeName="transform"
+              attributeType="XML"
+              type="rotate"
+              dur="1s"
+              from="0 50 50"
+              to="360 50 50"
+              repeatCount="indefinite"
+            />
+          </path>
+        </svg>
+        <svg
+          class="displaynone"
+          id="successIcon"
+          style="width: 16px; height: 16px; color: green"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z"
+          />
+        </svg>
+        <svg
+          id="errorIcon"
+          class="displaynone"
+          style="width: 16px; height: 16px; color: red"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z"
+          />
+        </svg>
+        add shop
+      </button>
       <button id="finishday-btn">finish day</button>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(2, 50px);
+          align-items: center;
+        "
+      >
+        <label for="isDebt">Is debt</label>
+        <input id="isDebt" type="checkbox" />
+        <label for="debtpaid">Both</label>
+        <input id="debtpaid" type="checkbox" />
+        <div
+          class="displaynone"
+          id="debtpaid-input"
+          style="grid-column: span 2"
+        >
+          <span>paid £</span>
+          <input id="debtpaidInputField" style="width: 50px" type="number" />
+          <p id="debtField">Debt:</p>
+        </div>
+      </div>
     </div>
     <p id="tenprc-element">10%: £0.00</p>
     <p id="discount">Discount: £0.00</p>
