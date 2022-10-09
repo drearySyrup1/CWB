@@ -409,6 +409,7 @@ async function postData(url = '', data = {}) {
     headers: {
       'Content-Type': 'application/json',
       'api-key': 'admin-123',
+      'Access-Control-Allow-Origin': '*',
     },
     cors: 'no-cors',
     redirect: 'manual',
@@ -443,6 +444,7 @@ const currencyPrefix = '£';
 const tenPrcElement = document.getElementById('tenprc-element');
 const useTenButton = document.getElementById('10prc-btn');
 const addShopButton = document.getElementById('addshop-btn');
+const finishdayBtn = document.getElementById('finishday-btn');
 const loadingIcon = document.getElementById('loadingsvg');
 const successIcon = document.getElementById('successIcon');
 const errorIcon = document.getElementById('errorIcon');
@@ -540,6 +542,28 @@ invoiceTotal.addEventListener('input', (e) => {
   displayTenPrc(invoiceTotal.value);
   numbersOnly(e, invoiceTotal);
   updateDebtField();
+});
+
+finishdayBtn.addEventListener('click', () => {
+  fetch('https://aurimasg7.pythonanywhere.com/getfile', {
+    method: 'GET', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': 'admin-123',
+    },
+    cors: 'cors',
+  })
+    .then((response) => response.blob())
+    .then((blob) => {
+      var url = window.URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'filename.xlsx';
+      document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+      a.click();
+      a.remove(); //afterwards we remove the element again
+    })
+    .catch((err) => console.log(err));
 });
 // After seleted shop
 // Load items with correct prices
