@@ -312,6 +312,7 @@ function addCustomField(parent) {
   const customAddButton = document.createElement('button');
   customAddButton.dataset.id = id;
   customAddButton.innerHTML = '+';
+  customAddButton.classList.add('addMoreButton');
 
   customAddButton.addEventListener('click', () => {
     addCustomField(listings);

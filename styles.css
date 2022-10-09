@@ -10,7 +10,7 @@ body {
   margin: 0;
   padding: 1rem;
   font-family: 'Roboto', sans-serif;
-  font-size: .8rem;
+  font-size: .7rem;
 }
 
 .top {
@@ -26,7 +26,7 @@ body {
 
 .listing {
   display: grid;
-  grid-template-columns: 120px repeat(3, 1fr);
+  grid-template-columns: 75px repeat(3, 1fr);
   padding: .2rem;
   border-bottom: 1px solid black;
   column-gap: 10px;
@@ -69,7 +69,6 @@ body {
 .quantity-things {
   display: flex;
   align-items: center;
-  gap: 5px;
 }
 
 #warning {
@@ -132,6 +131,10 @@ input[type=number][data-price] {
   width: 45px;
 }
 
+.addMoreButton {
+  border-radius: 100px !important;
+}
+
 input[type=number] {
   -moz-appearance: textfield;
 }
@@ -139,4 +142,8 @@ input[type=number] {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+}
+
+.listing p {
+  width:max-content;
 }
