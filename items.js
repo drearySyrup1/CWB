@@ -43,7 +43,7 @@ export default [
 
   {
     name: "Small Pastry",
-    price: 0.96,
+    price: 0.961,
     halfPrice: true,
   },
   {
